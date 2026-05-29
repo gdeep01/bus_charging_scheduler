@@ -3,8 +3,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from scheduler.engine import ChargingScheduler
-from utils.loader import list_scenario_files, load_scenario
+from bus_charging_scheduler.scheduler.engine import ChargingScheduler
+from bus_charging_scheduler.utils.loader import list_scenario_files, load_scenario
 
 
 APP_TITLE = "Bus Charging Scheduler"
@@ -182,46 +182,47 @@ def timeline_values(value):
     return values
 
 
-st.title(APP_TITLE)
+def run_app():
+    st.title(APP_TITLE)
 
-scenarios = load_all_scenarios()
-selected_label = st.selectbox("Scenario", list(scenarios.keys()))
-selected_scenario = scenarios[selected_label]
-st.write(SCENARIO_DESCRIPTIONS[selected_scenario["scenario"]["id"]])
+    scenarios = load_all_scenarios()
+    selected_label = st.selectbox("Scenario", list(scenarios.keys()))
+    selected_scenario = scenarios[selected_label]
+    st.write(SCENARIO_DESCRIPTIONS[selected_scenario["scenario"]["id"]])
 
-st.header("Scenario Input")
-bus_rows = [
-    {
-        "Bus ID": bus["id"],
-        "Operator": bus["operator"],
-        "Direction": bus["direction"],
-        "Departure time": bus["departure_time"],
-    }
-    for bus in selected_scenario["buses"]
-]
-st.dataframe(operator_styled_table(bus_rows), width="stretch", hide_index=True)
+    st.header("Scenario Input")
+    bus_rows = [
+        {
+            "Bus ID": bus["id"],
+            "Operator": bus["operator"],
+            "Direction": bus["direction"],
+            "Departure time": bus["departure_time"],
+        }
+        for bus in selected_scenario["buses"]
+    ]
+    st.dataframe(operator_styled_table(bus_rows), width="stretch", hide_index=True)
 
-result = run_scheduler(selected_scenario)
-total_wait = total_wait_minutes(result)
-worst_wait = worst_wait_minutes(result)
+    result = run_scheduler(selected_scenario)
+    total_wait = total_wait_minutes(result)
+    worst_wait = worst_wait_minutes(result)
 
-metric_columns = st.columns(3)
-metric_columns[0].metric("Total buses scheduled", len(result["buses"]))
-metric_columns[1].metric("Total network wait time", f"{total_wait} min")
-metric_columns[2].metric("Longest single wait", f"{worst_wait} min")
+    metric_columns = st.columns(3)
+    metric_columns[0].metric("Total buses scheduled", len(result["buses"]))
+    metric_columns[1].metric("Total network wait time", f"{total_wait} min")
+    metric_columns[2].metric("Longest single wait", f"{worst_wait} min")
 
-st.header("Scheduler Output")
-bus_tab, station_tab = st.tabs(["Per-bus timetable", "Per-station view"])
+    st.header("Scheduler Output")
+    bus_tab, station_tab = st.tabs(["Per-bus timetable", "Per-station view"])
 
-with bus_tab:
-    st.dataframe(bus_timetable_style(bus_summary_rows(result)), width="stretch", hide_index=True)
-    for bus in result["buses"]:
-        with st.expander(f"{bus['Bus ID']} details"):
-            st.dataframe(bus_detail_style(bus_detail_rows(bus)), width="stretch", hide_index=True)
+    with bus_tab:
+        st.dataframe(bus_timetable_style(bus_summary_rows(result)), width="stretch", hide_index=True)
+        for bus in result["buses"]:
+            with st.expander(f"{bus['Bus ID']} details"):
+                st.dataframe(bus_detail_style(bus_detail_rows(bus)), width="stretch", hide_index=True)
 
-with station_tab:
-    st.dataframe(station_summary_style(station_summary_rows(result)), width="stretch", hide_index=True)
-    for station_name, sessions in result["stations"].items():
-        st.subheader(station_name)
-        with st.expander("Show full queue"):
-            st.dataframe(station_table_style(sessions), width="stretch", hide_index=True)
+    with station_tab:
+        st.dataframe(station_summary_style(station_summary_rows(result)), width="stretch", hide_index=True)
+        for station_name, sessions in result["stations"].items():
+            st.subheader(station_name)
+            with st.expander("Show full queue"):
+                st.dataframe(station_table_style(sessions), width="stretch", hide_index=True)

@@ -7,14 +7,14 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-APP_ROOT = PROJECT_ROOT / "voltway"
+APP_ROOT = PROJECT_ROOT
 sys.path.insert(0, str(APP_ROOT))
 
-from scheduler.engine import ChargingScheduler, parse_time_to_minutes
-from utils.loader import load_scenario
+from bus_charging_scheduler.scheduler.engine import ChargingScheduler, parse_time_to_minutes
+from bus_charging_scheduler.utils.loader import load_scenario
 
 
-SCENARIO_DIR = APP_ROOT / "scenarios"
+SCENARIO_DIR = APP_ROOT / "bus_charging_scheduler" / "scenarios"
 ROUTE_STATIONS = ["Bengaluru", "A", "B", "C", "D", "Kochi"]
 SEGMENT_DISTANCES = [100, 120, 100, 120, 100]
 

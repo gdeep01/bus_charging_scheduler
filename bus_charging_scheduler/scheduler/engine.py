@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from heapq import heappop, heappush
 from itertools import combinations
 
-from scheduler.rules import build_active_rules
-from scheduler.station import ChargingStation
+from bus_charging_scheduler.scheduler.rules import build_active_rules
+from bus_charging_scheduler.scheduler.station import ChargingStation
 
 
 EVENT_PRIORITY = {
